@@ -9,7 +9,7 @@ st.set_page_config(layout="wide", page_title="California Map")
 st.title("Eligible Muslim Voters by County in California")
 
 # === Load Data ===
-muslim_data = pd.read_csv("MuslimPerCountycode.csv")               # Contains countyCode, count
+muslim_data = pd.read_csv("MuslimVoterStatsByCountyCode.csv")               # Contains countyCode, count
 county_lookup = pd.read_csv("DHCS_County_Code_Reference_Table.csv")           # Contains DHCS_County_Code, County_Name
 
 # === Join the two datasets on county code ===
@@ -22,9 +22,21 @@ merged_df = pd.merge(
 
 # Clean & title-case county names
 merged_df["County_Name"] = merged_df["County_Name"].str.strip().str.title()
+# Format numbers with commas
+merged_df["Muslim_Numbers"] = merged_df["Muslim_Total"].astype(int)
+merged_df["Muslim_Voted"] = merged_df["Muslim_Voted"].fillna(0).astype(int)
+merged_df["Muslim_Voted_Percent"] = merged_df["Muslim_Voted_Percent"].round(2)
+
+# Create custom hover text
+merged_df["hover_text"] = (
+    merged_df["County_Name"] + "<br>" +
+    "Total Muslims: " + merged_df["Muslim_Numbers"].apply(lambda x: f"{x:,}") + "<br>" +
+    "Voted Muslims: " + merged_df["Muslim_Voted"].apply(lambda x: f"{x:,}") + "<br>" +
+    "Voting %: " + merged_df["Muslim_Voted_Percent"].astype(str) + "%"
+)
 
 # Create hover text
-merged_df["hover_text"] = merged_df["County_Name"] + ": " + merged_df["Muslim_Numbers"].apply(lambda x: f"{x:,}") + " people"
+# merged_df["hover_text"] = merged_df["County_Name"] + ": " + merged_df["Muslim_Numbers"].apply(lambda x: f"{x:,}") + " people"
 
 # === Load GeoJSON for California counties ===
 with open("California_County_Boundaries.geojson", "r") as file:
