@@ -1,0 +1,59 @@
+﻿OBJECTID,DHCS_County_Code,County_Name,County_Region_Code,County_Region_Description,FIPS_County_Code,FIPS_State_County_Code,North_South_Indicator
+1,01,Alameda,G,San Jose,001,06001,N
+2,02,Alpine,C,Sacramento,003,06003,N
+3,03,Amador,C,Sacramento,005,06005,N
+4,04,Butte,C,Sacramento,007,06007,N
+5,05,Calaveras,C,Sacramento,009,06009,N
+6,06,Colusa,C,Sacramento,011,06011,N
+7,07,Contra Costa,G,San Jose,013,06013,N
+8,08,Del Norte,F,San Francisco,015,06015,N
+9,09,El Dorado,C,Sacramento,017,06017,N
+10,10,Fresno,A,Fresno,019,06019,N
+11,11,Glenn,C,Sacramento,021,06021,N
+12,12,Humboldt,F,San Francisco,023,06023,N
+13,13,Imperial,E,San Diego,025,06025,S
+14,14,Inyo,G,San Jose,027,06027,N
+15,15,Kern,A,Fresno,029,06029,S
+16,16,Kings,A,Fresno,031,06031,N
+17,17,Lake,F,San Francisco,033,06033,N
+18,18,Lassen,C,Sacramento,035,06035,N
+19,19,Los Angeles,B,Los Angeles,037,06037,S
+20,20,Madera,A,Fresno,039,06039,N
+21,21,Marin,F,San Francisco,041,06041,N
+22,22,Mariposa,A,Fresno,043,06043,N
+23,23,Mendocino,F,San Francisco,045,06045,N
+24,24,Merced,A,Fresno,047,06047,N
+25,25,Modoc,C,Sacramento,049,06049,N
+26,26,Mono,D,San Bernardino,051,06051,N
+27,27,Monterey,G,San Jose,053,06053,N
+28,28,Napa,F,San Francisco,055,06055,N
+29,29,Nevada,C,Sacramento,057,06057,N
+30,30,Orange,D,San Bernardino,059,06059,S
+31,31,Placer,C,Sacramento,061,06061,N
+32,32,Plumas,C,Sacramento,063,06063,N
+33,33,Riverside,D,San Bernardino,065,06065,S
+34,34,Sacramento,C,Sacramento,067,06067,N
+35,35,San Benito,G,San Jose,069,06069,N
+36,36,San Bernardino,D,San Bernardino,071,06071,S
+37,37,San Diego,E,San Diego,073,06073,S
+38,38,San Francisco,F,San Francisco,075,06075,N
+39,39,San Joaquin,C,Sacramento,077,06077,N
+40,40,San Luis Obispo,G,San Jose,079,06079,S
+41,41,San Mateo,F,San Francisco,081,06081,N
+42,42,Santa Barbara,G,San Jose,083,06083,S
+43,43,Santa Clara,G,San Jose,085,06085,N
+44,44,Santa Cruz,G,San Jose,087,06087,N
+45,45,Shasta,C,Sacramento,089,06089,N
+46,46,Sierra,C,Sacramento,091,06091,N
+47,47,Siskiyou,C,Sacramento,093,06093,N
+48,48,Solano,F,San Francisco,095,06095,N
+49,49,Sonoma,F,San Francisco,097,06097,N
+50,50,Stanislaus,A,Fresno,099,06099,N
+51,51,Sutter,C,Sacramento,101,06101,N
+52,52,Tehama,C,Sacramento,103,06103,N
+53,53,Trinity,C,Sacramento,105,06105,N
+54,54,Tulare,A,Fresno,107,06107,N
+55,55,Tuolumne,A,Fresno,109,06109,N
+56,56,Ventura,B,Los Angeles,111,06111,S
+57,57,Yolo,C,Sacramento,113,06113,N
+58,58,Yuba,C,Sacramento,115,06115,N
