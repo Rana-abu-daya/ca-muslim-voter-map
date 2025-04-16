@@ -29,11 +29,12 @@ merged_df["Muslim_Voted_Percent"] = merged_df["Muslim_Voted_Percent"].round(2)
 
 # Create custom hover text
 merged_df["hover_text"] = (
-    merged_df["County_Name"] + "<br>" +
-    "Total Muslims: " + merged_df["Muslim_Numbers"].apply(lambda x: f"{x:,}") + "<br>" +
-    "Voted Muslims: " + merged_df["Muslim_Voted"].apply(lambda x: f"{x:,}") + "<br>" +
-    "Voting %: " + merged_df["Muslim_Voted_Percent"].astype(str) + "%"
+    "<b>" + merged_df["County_Name"] + "</b><br>" +
+    "Total Muslims: <span style='color:red'>" + merged_df["Muslim_Numbers"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voted Muslims: <span style='color:red'>" + merged_df["Muslim_Voted"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voting %: <span style='color:red'>" + merged_df["Muslim_Voted_Percent"].astype(str) + "%</span>"
 )
+
 
 # Create hover text
 # merged_df["hover_text"] = merged_df["County_Name"] + ": " + merged_df["Muslim_Numbers"].apply(lambda x: f"{x:,}") + " people"
@@ -89,11 +90,12 @@ data["Muslim_Voted"] = data["Muslim_Voted"].fillna(0).astype(int)
 data["Muslim_Voted_Percent"] = data["Muslim_Voted_Percent"].round(2)
 
 data["hover_text"] = (
-    data["City"] + "<br>" +
-    "Total Muslims: " + data["Muslim_Numbers"].apply(lambda x: f"{x:,}") + "<br>" +
-    "Voted Muslims: " + data["Muslim_Voted"].apply(lambda x: f"{x:,}") + "<br>" +
-    "Voting %: " + data["Muslim_Voted_Percent"].astype(str) + "%"
+    "<b>" + data["City"] + "</b><br>" +
+    "Total Muslims: <span style='color:red'>" + data["Muslim_Numbers"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voted Muslims: <span style='color:red'>" + data["Muslim_Voted"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voting %: <span style='color:red'>" + data["Muslim_Voted_Percent"].astype(str) + "%</span>"
 )
+
 
 # Hover text
 # data["hover_text"] = data["City"] + ": " + data["MuslimNumbers"].apply(lambda x: f"{x:,}")
@@ -143,7 +145,7 @@ st.plotly_chart(fig, use_container_width=True)
 st.title("Eligible Muslim Voters by School District in California")
 
 # === Step 1: Load Muslim voter data and matching results ===
-data = pd.read_csv("MuslimPerSchoolDistrict.csv")  # columns: school_district, count
+data = pd.read_csv("MuslimPerSchoolDistrictVoted2.csv")  # columns: school_district, count
 matches = pd.read_csv("district_name_matching_results.csv")  # columns: School District, Matched DistrictName
 
 # Merge the cleaned district names
@@ -154,18 +156,35 @@ merged = pd.merge(data, matches, on="School District", how="left")
 merged = merged.dropna(subset=["Matched DistrictName"])
 merged = merged[merged["Matched DistrictName"].str.strip() != ""]
 
+
+
 # === Step 2: Load California School District GeoJSON ===
 with open("California_School_District_Areas_2022-23.geojson", "r") as file:
     geojson_data = json.load(file)
 
+
+# Format data types
+merged["Muslim_Total"] = merged["Muslim_Total"].astype(int)
+merged["Muslim_Voted"] = merged["Muslim_Voted"].fillna(0).astype(int)
+merged["Muslim_Voted_Percent"] = merged["Muslim_Voted_Percent"].round(2)
+
+# Create hover text
+merged["hover_text"] = (
+    "<b>" + merged["Matched DistrictName"] + "</b><br>" +
+    "Total Muslims: <span style='color:red'>" + merged["Muslim_Total"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voted Muslims: <span style='color:red'>" + merged["Muslim_Voted"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voting %: <span style='color:red'>" + merged["Muslim_Voted_Percent"].astype(str) + "%</span>"
+)
+
+
 # === Step 3: Create hover text ===
-merged["hover_text"] = merged["Matched DistrictName"] + ": " + merged["count"].apply(lambda x: f"{x:,}") + " people"
+# merged["hover_text"] = merged["Matched DistrictName"] + ": " + merged["count"].apply(lambda x: f"{x:,}") + " people"
 
 # === Step 4: Choropleth Map ===
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
     locations=merged["Matched DistrictName"],
-    z=merged["count"],
+    z=merged["Muslim_Total"],
     text=merged["hover_text"],
     featureidkey="properties.DistrictName",
     hovertemplate="%{text}<extra></extra>",
@@ -201,17 +220,16 @@ centroid_df = pd.DataFrame(district_centroids)
 for _, row in centroid_df.iterrows():
     match = merged[merged["Matched DistrictName"] == row["district"]]
     if not match.empty:
-        muslim_count = match["count"].values[0]
+        muslim_count = match["Muslim_Total"].values[0]
         fig.add_trace(go.Scattermapbox(
             lon=[row["lon"]],
             lat=[row["lat"]],
             mode="text",
-            text=[row["district"]],
-            textfont=dict(size=9, color="black"),
-            hoverinfo="text",
-            hovertext=[f"<b>{row['district']}</b><br>Muslim Population: {muslim_count:,}"],
+            text=[match["hover_text"].values[0]],  # FIXED HERE
+            hovertemplate="%{text}<extra></extra>",
             showlegend=False
         ))
+
 
 # === Step 6: Layout ===
 fig.update_layout(
