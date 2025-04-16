@@ -81,11 +81,22 @@ st.plotly_chart(fig, use_container_width=True)
 st.title("Eligible Muslim Voters by City in California")
 
 # Load the data
-data = pd.read_csv("MuslimsPerCity.csv")
+data = pd.read_csv("MuslimsPerCityVoting.csv")
 data["City"] = data["City"].str.strip().str.title()
 
+data["Muslim_Numbers"] = data["Muslim_Total"].astype(int)
+data["Muslim_Voted"] = data["Muslim_Voted"].fillna(0).astype(int)
+data["Muslim_Voted_Percent"] = data["Muslim_Voted_Percent"].round(2)
+
+data["hover_text"] = (
+    data["City"] + "<br>" +
+    "Total Muslims: " + data["Muslim_Numbers"].apply(lambda x: f"{x:,}") + "<br>" +
+    "Voted Muslims: " + data["Muslim_Voted"].apply(lambda x: f"{x:,}") + "<br>" +
+    "Voting %: " + data["Muslim_Voted_Percent"].astype(str) + "%"
+)
+
 # Hover text
-data["hover_text"] = data["City"] + ": " + data["MuslimNumbers"].apply(lambda x: f"{x:,}")
+# data["hover_text"] = data["City"] + ": " + data["MuslimNumbers"].apply(lambda x: f"{x:,}")
 
 # Load GeoJSON
 with open("California_Incorporated_Cities.geojson", "r") as file:
@@ -95,7 +106,7 @@ with open("California_Incorporated_Cities.geojson", "r") as file:
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
     locations=data["City"],
-    z=data["MuslimNumbers"],
+    z=data["Muslim_Numbers"],
     featureidkey="properties.CITY",  # Adjust if different in GeoJSON
     colorscale=[
         [0, "white"],
