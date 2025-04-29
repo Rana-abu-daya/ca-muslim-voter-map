@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import json
-
+import geopandas as gpd
+import re
 st.set_page_config(layout="wide", page_title="California Map")
 
 # App title
@@ -176,7 +177,11 @@ merged["hover_text"] = (
     "Voting %: <span style='color:red'>" + merged["Muslim_Voted_Percent"].astype(str) + "%</span>"
 )
 
+z_values = merged["Muslim_Voted_Percent"]
 
+# Voting % dynamic range
+voting_min = z_values.min()
+voting_max = z_values.max()
 # === Step 3: Create hover text ===
 # merged["hover_text"] = merged["Matched DistrictName"] + ": " + merged["count"].apply(lambda x: f"{x:,}") + " people"
 
@@ -184,16 +189,18 @@ merged["hover_text"] = (
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
     locations=merged["Matched DistrictName"],
-    z=merged["Muslim_Total"],
+    z=z_values,
+    zmin=voting_min,
+    zmax=voting_max,
     text=merged["hover_text"],
     featureidkey="properties.DistrictName",
     hovertemplate="%{text}<extra></extra>",
     colorscale=[
-        [0, "white"],
-        [0.05, "yellow"],
-        [0.25, "lightgreen"],
-        [0.5, "green"],
-        [1, "darkgreen"]
+        [0.0, "white"],
+        [0.2, "yellow"],
+        [0.4, "lightgreen"],
+        [0.7, "green"],
+        [1.0, "darkgreen"]
     ],
     marker_opacity=0.8,
     marker_line_width=1.2
@@ -248,7 +255,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 ################### CD ##################
 st.title("Eligible Muslim Voters by Congressional District in California")
-import  re
+
 # === Load Data ===
 data = pd.read_csv("MuslimsPerCongressionalDistrictVoting.csv")
 def extract_district_number(text):
@@ -261,7 +268,7 @@ data["District_Number"] = data["Congressional District"].apply(extract_district_
 
 # Step 2: Force proper formatting
 data["District_Number"] = data["District_Number"].apply(lambda x: f"{int(x):02d}" if pd.notna(x) else None)
-print(data['District_Number'])
+
 # === Load GeoJSON ===
 with open("Congressional_Districts_CA.geojson", "r") as file:
     geojson_data = json.load(file)
@@ -322,3 +329,175 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
+################## LD ##################
+
+# Title
+st.title("Eligible Muslim Voters by Legislative District in California")
+st.subheader("State Assembly District")
+
+
+# --- Load Data ---
+data = pd.read_csv("MuslimsPerStateAssemblyDistrictVoting.csv")
+data["State Assembly District"] = data["State Assembly District"].astype(str).str.strip()
+
+# Extract District Numbers
+def extract_district_numberAssembly(text):
+    match = re.search(r'(\d+)', str(text))
+    if match:
+        return int(match.group(1))
+    return None
+
+data["District_Number"] = data["State Assembly District"].apply(extract_district_numberAssembly)
+data["District_Number"] = data["District_Number"].apply(lambda x: f"{int(x):02d}" if pd.notna(x) else None)
+data = data.dropna(subset=["District_Number"])
+
+# Build Assembly District Name (e.g., "Assembly District 18")
+data["AssemblyDistrictName"] = "Assembly District " + data["District_Number"]
+
+
+with open("CA_AssemblyDistricts_WGS84.geojson") as f:
+    geojson_data = json.load(f)
+
+# --- Load GeoJSON ---
+# with open("Legislative-AssemblyDistrict.geojson", "r") as f:
+#     geojson_data = json.load(f)
+
+# --- Hover text and z values ---
+data["Muslim_Total"] = data["Muslim_Total"].astype(int)
+data["Muslim_Voted"] = data["Muslim_Voted"].fillna(0).astype(int)
+data["Muslim_Voted_Percent"] = data["Muslim_Voted_Percent"].round(2)
+
+data["hover_text"] = (
+    "<b>Assembly District " + data["District_Number"] + "</b><br>" +
+    "Total Muslims: <span style='color:red'>" + data["Muslim_Total"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voted Muslims: <span style='color:red'>" + data["Muslim_Voted"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voting %: <span style='color:red'>" + data["Muslim_Voted_Percent"].astype(str) + "%</span>"
+)
+
+# --- Choropleth Map ---
+voting_min = data["Muslim_Voted_Percent"].min()
+voting_max = data["Muslim_Voted_Percent"].max()
+# 1. Extract valid Assembly District names from GeoJSON
+valid_district_names = {
+    feature["properties"]["AssemblyDistrictName"]
+    for feature in geojson_data["features"]
+}
+
+# 3. Filter only rows where AssemblyDistrictName matches GeoJSON
+# Only keep rows where AssemblyDistrictName exists in the GeoJSON
+valid_names = {f["properties"]["AssemblyDistrictName"] for f in geojson_data["features"]}
+data = data[data["AssemblyDistrictName"].isin(valid_names)]
+
+fig = go.Figure(go.Choroplethmapbox(
+    geojson=geojson_data,
+    locations=data["AssemblyDistrictName"],
+    z=data["Muslim_Voted_Percent"],
+    featureidkey="properties.AssemblyDistrictName",  # check your geojson key
+    text=data["hover_text"],
+    hovertemplate="%{text}<extra></extra>",
+    colorscale=[
+        [0.0, "white"],
+        [0.3, "yellow"],
+        [0.5, "lightgreen"],
+        [0.7, "green"],
+        [1.0, "darkgreen"]
+    ],
+    zmin=voting_min,
+    zmax=voting_max,
+    marker_opacity=0.8,
+    marker_line_width=1.2
+))
+
+fig.update_layout(
+    mapbox_style="carto-positron",
+    mapbox_zoom=5,
+    mapbox_center={"lat": 36.7783, "lon": -119.4179},
+    margin={"r": 0, "t": 0, "l": 0, "b": 0},
+    height=600,
+    width=700,
+    coloraxis_colorbar=dict(
+        title="Muslim Voting %"
+    )
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+################### Senta
+st.subheader("State Senate District")
+data = pd.read_csv("MuslimsPerStateSenateDistrictVoting.csv")
+
+# Extract and clean District Numbers
+def extract_district_numberSenta(text):
+    match = re.search(r'(\d+)', str(text))
+    if match:
+        return int(match.group(1))
+    return None
+
+data["District_Number"] = data["State Senate District"].apply(extract_district_numberSenta)
+data = data.dropna(subset=["District_Number"])
+
+import json
+
+with open("CA_SenateDistricts_WGS84.geojson") as f:
+    geojson_data = json.load(f)
+
+# === Prepare Hover Text ===
+data["Muslim_Total"] = data["Muslim_Total"].astype(int)
+data["Muslim_Voted"] = data["Muslim_Voted"].fillna(0).astype(int)
+data["Muslim_Voted_Percent"] = data["Muslim_Voted_Percent"].round(2)
+data["District_Number"] = data["District_Number"].astype(int).astype(str)
+data["hover_text"] = (
+    "<b>State Senate District " + data["District_Number"] + "</b><br>" +
+    "Total Muslims: <span style='color:red'>" + data["Muslim_Total"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voted Muslims: <span style='color:red'>" + data["Muslim_Voted"].apply(lambda x: f"{x:,}") + "</span><br>" +
+    "Voting %: <span style='color:red'>" + data["Muslim_Voted_Percent"].astype(str) + "%</span>"
+)
+
+z_values = data["Muslim_Voted_Percent"]
+voting_min = data["Muslim_Voted_Percent"].min()
+voting_max = data["Muslim_Voted_Percent"].max()
+
+# === Build Choropleth Map ===
+# Check GeoJSON keys
+
+# Keep only districts that exist in the GeoJSON
+geojson_districts = {str(f["properties"]["district"]).strip() for f in geojson_data["features"]}
+data = data[data["District_Number"].isin(geojson_districts)].copy()
+print(data['District_Number'])
+fig = go.Figure(go.Choroplethmapbox(
+    geojson=geojson_data,
+    locations=data["District_Number"],
+    z=data["Muslim_Voted_Percent"],
+    zmin=voting_min,
+    zmax=voting_max,
+    featureidkey="properties.district",
+    text=data["hover_text"],
+    hovertemplate="%{text}<extra></extra>",
+    colorscale=[
+        [0.0, "white"],
+        [0.3, "yellow"],
+        [0.5, "lightgreen"],
+        [0.7, "green"],
+        [1.0, "darkgreen"]
+    ],
+    marker_opacity=0.8,
+    marker_line_width=1.2,
+))
+
+
+# Layout
+fig.update_layout(
+    mapbox_style="carto-positron",
+    mapbox_zoom=5,
+    mapbox_center={"lat": 36.7783, "lon": -119.4179},
+    margin={"r": 0, "t": 0, "l": 0, "b": 0},
+    height=600,
+    width=600,
+    coloraxis=dict(
+        colorbar=dict(title="Muslim Voting %"),
+        cmin=0,
+        cmax=100
+    )
+)
+
+st.plotly_chart(fig, use_container_width=True)
