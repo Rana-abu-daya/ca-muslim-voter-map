@@ -475,9 +475,9 @@ fig = go.Figure(go.Choroplethmapbox(
     hovertemplate="%{text}<extra></extra>",
     colorscale=[
         [0.0, "white"],
-        [0.3, "yellow"],
-        [0.5, "lightgreen"],
-        [0.7, "green"],
+        [0.5, "yellow"],
+        [0.7, "lightgreen"],
+        [0.8, "green"],
         [1.0, "darkgreen"]
     ],
     marker_opacity=0.8,
