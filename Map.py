@@ -36,7 +36,8 @@ merged_df["hover_text"] = (
     "Voting %: <span style='color:red'>" + merged_df["Muslim_Voted_Percent"].astype(str) + "%</span>"
 )
 
-
+population_min = merged_df["Muslim_Numbers"].min()
+population_max = merged_df["Muslim_Numbers"].max()
 # Create hover text
 # merged_df["hover_text"] = merged_df["County_Name"] + ": " + merged_df["Muslim_Numbers"].apply(lambda x: f"{x:,}") + " people"
 
@@ -47,17 +48,20 @@ with open("California_County_Boundaries.geojson", "r") as file:
 # === Plot Choropleth ===
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
-    locations=merged_df["County_Name"],  # This must match featureidkey field
-    z=merged_df["Muslim_Numbers"],
+    locations=merged_df["County_Name"],  # Match with featureidkey
+    z=merged_df["Muslim_Numbers"],  # Use Muslim population as color scale
     text=merged_df["hover_text"],
-    featureidkey="properties.CountyName",  # This must match what's inside the GeoJSON
+    featureidkey="properties.CountyName",  # Match with GeoJSON property
     hovertemplate="%{text}<extra></extra>",
     colorscale=[
         [0, "white"],
-        [0.01, "yellow"],
-        [0.1, "lightgreen"],
+        [0.2, "yellow"],
+        [0.4, "lightgreen"],
+        [0.7, "green"],
         [1, "darkgreen"]
     ],
+    zmin=population_min,  # Set min value for color scale
+    zmax=population_max,  # Set max value for color scale
     marker_opacity=0.8,
     marker_line_width=1.2
 ))
