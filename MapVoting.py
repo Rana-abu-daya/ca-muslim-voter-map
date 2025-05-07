@@ -36,11 +36,8 @@ merged_df["hover_text"] = (
     "Voting %: <span style='color:red'>" + merged_df["Muslim_Voted_Percent"].astype(str) + "%</span>"
 )
 
-population_min = merged_df["Muslim_Numbers"].min()
-population_max = merged_df["Muslim_Numbers"].max()
-# Create hover text
-# merged_df["hover_text"] = merged_df["County_Name"] + ": " + merged_df["Muslim_Numbers"].apply(lambda x: f"{x:,}") + " people"
-population_min = max(1, population_min)  # Ensures that the smallest value is at least 1
+voting_min = merged_df["Muslim_Voted_Percent"].min()
+voting_max = merged_df["Muslim_Voted_Percent"].max()
 
 # === Load GeoJSON for California counties ===
 with open("California_County_Boundaries.geojson", "r") as file:
@@ -50,20 +47,20 @@ with open("California_County_Boundaries.geojson", "r") as file:
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
     locations=merged_df["County_Name"],  # Match with featureidkey
-    z=merged_df["Muslim_Numbers"],  # Use Muslim population as color scale
+    z=merged_df["Muslim_Voted_Percent"],  # Use Voting Percentage as color scale
     text=merged_df["hover_text"],
     featureidkey="properties.CountyName",  # Match with GeoJSON property
     hovertemplate="%{text}<extra></extra>",
     colorscale=[
-        [0, "white"],  # 0% of the range (minimum population) is white
-        [0.05, "yellow"],  # 5% of the range is a very light yellow (just above white)
-        [0.2, "lightgreen"],  # 20% of the range is yellow
-        # [0.4, "lightgreen"],  # 40% of the range is light green
-        [0.7, "green"],  # 70% of the range is green
-        [1, "darkgreen"]  # 100% of the range (maximum population) is dark green
+        [0, "white"],
+        [0.05, "yellow"],
+        [0.2, "lightgreen"],
+        [0.4, "green"],
+        [0.7, "darkgreen"],
+        [1, "darkgreen"]
     ],
-    zmin=population_min,  # Set min value for color scale
-    zmax=population_max,  # Set max value for color scale
+    zmin=voting_min,  # Set min value for color scale
+    zmax=voting_max,  # Set max value for color scale
     marker_opacity=0.8,
     marker_line_width=1.2
 ))
@@ -103,9 +100,6 @@ data["hover_text"] = (
     "Voting %: <span style='color:red'>" + data["Muslim_Voted_Percent"].astype(str) + "%</span>"
 )
 
-population_min = data["Muslim_Numbers"].min()
-population_max = data["Muslim_Numbers"].max()
-population_min = max(1, population_min)  # Ensures that the smallest value is at least 1
 
 # Hover text
 # data["hover_text"] = data["City"] + ": " + data["MuslimNumbers"].apply(lambda x: f"{x:,}")
@@ -115,27 +109,29 @@ with open("California_Incorporated_Cities.geojson", "r") as file:
     geojson_data = json.load(file)
 
 # Choropleth map
+voting_min = data["Muslim_Voted_Percent"].min()
+voting_max = data["Muslim_Voted_Percent"].max()
+
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
     locations=data["City"],  # Match with featureidkey
-    z=data["Muslim_Numbers"],  # Use Muslim population as color scale
+    z=data["Muslim_Voted_Percent"],  # Use Voting Percentage as color scale
     featureidkey="properties.CITY",  # Match with GeoJSON property
     colorscale=[
-        [0, "white"],  # 0% of the range (minimum population) is white
-        [0.05, "yellow"],  # 5% of the range is light yellow (just above white)
-        [0.2, "lightgreen"],  # 20% of the range is light green
-        [0.4, "green"],  # 40% of the range is green
-        [0.7, "darkgreen"],  # 70% of the range is dark green
-        [1, "darkgreen"]  # 100% of the range (maximum population) remains dark green
+        [0, "white"],
+        [0.05, "yellow"],
+        [0.2, "lightgreen"],
+        [0.4, "green"],
+        [0.7, "darkgreen"],
+        [1, "darkgreen"]
     ],
-    zmin=population_min,  # Set min value for color scale
-    zmax=population_max,  # Set max value for color scale
+    zmin=voting_min,  # Set min value for color scale
+    zmax=voting_max,  # Set max value for color scale
     marker_opacity=0.8,
     marker_line_width=1,
     text=data["hover_text"],
     hovertemplate="%{text}<extra></extra>"
 ))
-
 # Layout
 fig.update_layout(
     mapbox_style="carto-positron",
@@ -188,15 +184,12 @@ merged["hover_text"] = (
     "Voted Muslims: <span style='color:red'>" + merged["Muslim_Voted"].apply(lambda x: f"{x:,}") + "</span><br>" +
     "Voting %: <span style='color:red'>" + merged["Muslim_Voted_Percent"].astype(str) + "%</span>"
 )
-population_min = merged["Muslim_Total"].min()
-population_max = merged["Muslim_Total"].max()
-population_min = max(1, population_min)  # Ensures that the smallest value is at least 1
 
-# z_values = merged["Muslim_Voted_Percent"]
-#
-# # Voting % dynamic range
-# voting_min = z_values.min()
-# voting_max = z_values.max()
+z_values = merged["Muslim_Voted_Percent"]
+
+# Voting % dynamic range
+voting_min = z_values.min()
+voting_max = z_values.max()
 # === Step 3: Create hover text ===
 # merged["hover_text"] = merged["Matched DistrictName"] + ": " + merged["count"].apply(lambda x: f"{x:,}") + " people"
 
@@ -204,20 +197,19 @@ population_min = max(1, population_min)  # Ensures that the smallest value is at
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
     locations=merged["Matched DistrictName"],
-    z=merged["Muslim_Total"],  # Use Muslim population as color scale
+    z=z_values,
+    zmin=voting_min,
+    zmax=voting_max,
     text=merged["hover_text"],
-    featureidkey="properties.DistrictName",  # Match with GeoJSON property
+    featureidkey="properties.DistrictName",
     hovertemplate="%{text}<extra></extra>",
     colorscale=[
-        [0, "white"],  # 0% of the range (minimum population) is white
-        [0.01, "yellow"],  # 5% of the range is light yellow (just above white)
-        [0.1, "lightgreen"],  # 20% of the range is light green
-        [0.2, "green"],  # 40% of the range is green
-        [0.5, "darkgreen"],  # 70% of the range is dark green
-        [1, "darkgreen"]  # 100% of the range (maximum population) remains dark green
+        [0.0, "white"],
+        [0.2, "yellow"],
+        [0.4, "lightgreen"],
+        [0.7, "green"],
+        [1.0, "darkgreen"]
     ],
-    zmin=population_min,  # Set min value for color scale
-    zmax=population_max,  # Set max value for color scale
     marker_opacity=0.8,
     marker_line_width=1.2
 ))
@@ -302,32 +294,28 @@ data["hover_text"] = (
 )
 
 # Choose to color by % instead of total number
-# z_values = data["Muslim_Voted_Percent"]
-#
-# # Voting % dynamic range
-# voting_min = z_values.min()
-# voting_max = z_values.max()
-population_min = merged["Muslim_Total"].min()
-population_max = merged["Muslim_Total"].max()
-population_min = max(1, population_min)  # Ensures that the smallest value is at least 1
+z_values = data["Muslim_Voted_Percent"]
+
+# Voting % dynamic range
+voting_min = z_values.min()
+voting_max = z_values.max()
 
 # Choropleth
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
-    locations='Congressional District ' + data["District_Number"],  # Match with featureidkey
-    z=data["Muslim_Total"],  # Use Muslim population as color scale
-    zmin=population_min,  # Set min value for color scale
-    zmax=population_max,  # Set max value for color scale
-    featureidkey="properties.CongDistri",  # Match with GeoJSON property
+    locations='Congressional District '+data["District_Number"],
+    z=z_values,
+    zmin=voting_min,
+    zmax=voting_max,
+    featureidkey="properties.CongDistri",
     text=data["hover_text"],
     hovertemplate="%{text}<extra></extra>",
     colorscale=[
-        [0, "white"],  # 0% of the range (minimum population) is white
-        [0.01, "yellow"],  # 5% of the range is light yellow (just above white)
-        [0.1, "lightgreen"],  # 20% of the range is light green
-        [0.2, "green"],  # 40% of the range is green
-        [0.5, "darkgreen"],  # 70% of the range is dark green
-        [1, "darkgreen"]  # 100% of the range (maximum population) remains dark green
+        [0.0, "white"],
+        [0.2, "yellow"],
+        [0.4, "lightgreen"],
+        [0.7, "green"],
+        [1.0, "darkgreen"]
     ],
     marker_opacity=0.8,
     marker_line_width=1.2
@@ -395,12 +383,8 @@ data["hover_text"] = (
 )
 
 # --- Choropleth Map ---
-# voting_min = data["Muslim_Voted_Percent"].min()
-# voting_max = data["Muslim_Voted_Percent"].max()
-population_min = merged["Muslim_Total"].min()
-population_max = merged["Muslim_Total"].max()
-population_min = max(1, population_min)  # Ensures that the smallest value is at least 1
-
+voting_min = data["Muslim_Voted_Percent"].min()
+voting_max = data["Muslim_Voted_Percent"].max()
 # 1. Extract valid Assembly District names from GeoJSON
 valid_district_names = {
     feature["properties"]["AssemblyDistrictName"]
@@ -414,20 +398,20 @@ data = data[data["AssemblyDistrictName"].isin(valid_names)]
 
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
-    locations=data["AssemblyDistrictName"],  # Match with featureidkey
-    z=data["Muslim_Total"],  # Use Muslim population as color scale
-    zmin=population_min,  # Set min value for color scale
-    zmax=population_max,  # Set max value for color scale
-    featureidkey="properties.AssemblyDistrictName",  # Match with GeoJSON property
+    locations=data["AssemblyDistrictName"],
+    z=data["Muslim_Voted_Percent"],
+    featureidkey="properties.AssemblyDistrictName",  # check your geojson key
     text=data["hover_text"],
     hovertemplate="%{text}<extra></extra>",
     colorscale=[
-        [0, "white"],  # 0% of the range (minimum population) is white
-        [0.05, "yellow"],  # 5% of the range is light yellow (just above white)
-        [0.1, "lightgreen"],  # 20% of the range is light green
-        [0.4, "green"],  # 40% of the range is green
-        [1, "darkgreen"]  # 100% of the range (maximum population) remains dark green
+        [0.0, "white"],
+        [0.3, "yellow"],
+        [0.5, "lightgreen"],
+        [0.7, "green"],
+        [1.0, "darkgreen"]
     ],
+    zmin=voting_min,
+    zmax=voting_max,
     marker_opacity=0.8,
     marker_line_width=1.2
 ))
@@ -477,12 +461,9 @@ data["hover_text"] = (
     "Voting %: <span style='color:red'>" + data["Muslim_Voted_Percent"].astype(str) + "%</span>"
 )
 
-# z_values = data["Muslim_Voted_Percent"]
-# voting_min = data["Muslim_Voted_Percent"].min()
-# voting_max = data["Muslim_Voted_Percent"].max()
-population_min = merged["Muslim_Total"].min()
-population_max = merged["Muslim_Total"].max()
-population_min = max(1, population_min)  # Ensures that the smallest value is at least 1
+z_values = data["Muslim_Voted_Percent"]
+voting_min = data["Muslim_Voted_Percent"].min()
+voting_max = data["Muslim_Voted_Percent"].max()
 
 # === Build Choropleth Map ===
 # Check GeoJSON keys
@@ -490,22 +471,22 @@ population_min = max(1, population_min)  # Ensures that the smallest value is at
 # Keep only districts that exist in the GeoJSON
 geojson_districts = {str(f["properties"]["district"]).strip() for f in geojson_data["features"]}
 data = data[data["District_Number"].isin(geojson_districts)].copy()
-
+print(data['District_Number'])
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
     locations=data["District_Number"],
-    z=data["Muslim_Total"],
-    zmin=population_min,
-    zmax=population_max,
+    z=data["Muslim_Voted_Percent"],
+    zmin=voting_min,
+    zmax=voting_max,
     featureidkey="properties.district",
     text=data["hover_text"],
     hovertemplate="%{text}<extra></extra>",
     colorscale=[
-        [0, "white"],  # 0% of the range (minimum population) is white
-        [0.05, "yellow"],  # 5% of the range is light yellow (just above white)
-        [0.1, "lightgreen"],  # 20% of the range is light green
-        [0.4, "green"],  # 40% of the range is green
-        [1, "darkgreen"]  # 100% of the range (maximum population) remains dark green
+        [0.0, "white"],
+        [0.5, "yellow"],
+        [0.7, "lightgreen"],
+        [0.8, "green"],
+        [1.0, "darkgreen"]
     ],
     marker_opacity=0.8,
     marker_line_width=1.2,
