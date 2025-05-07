@@ -7,7 +7,7 @@ import re
 st.set_page_config(layout="wide", page_title="California Map")
 
 # App title
-st.title("Eligible Muslim Voters by County in California")
+st.title("Muslim Voter Turnout by County in California")
 
 # === Load Data ===
 muslim_data = pd.read_csv("MuslimVoterStatsByCountyCode.csv")               # Contains countyCode, count
@@ -83,7 +83,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 ######################## City ########################
 # Streamlit app title
-st.title("Eligible Muslim Voters by City in California")
+st.title("Muslim Voter Turnout by City in California")
 
 # Load the data
 data = pd.read_csv("MuslimsPerCityVoting.csv")
@@ -119,10 +119,9 @@ fig = go.Figure(go.Choroplethmapbox(
     featureidkey="properties.CITY",  # Match with GeoJSON property
     colorscale=[
         [0, "white"],
-        [0.05, "yellow"],
-        [0.2, "lightgreen"],
-        [0.4, "green"],
-        [0.7, "darkgreen"],
+        [0.4, "yellow"],
+        [0.5, "lightgreen"],
+        [0.7, "green"],
         [1, "darkgreen"]
     ],
     zmin=voting_min,  # Set min value for color scale
@@ -151,7 +150,7 @@ st.plotly_chart(fig, use_container_width=True)
 ######################## School district ############
 
 # Title
-st.title("Eligible Muslim Voters by School District in California")
+st.title("Muslim Voter Turnout by School District in California")
 
 # === Step 1: Load Muslim voter data and matching results ===
 data = pd.read_csv("MuslimPerSchoolDistrictVoted2.csv")  # columns: school_district, count
@@ -262,7 +261,7 @@ fig.update_layout(
 # === Step 7: Show the Map ===
 st.plotly_chart(fig, use_container_width=True)
 ################### CD ##################
-st.title("Eligible Muslim Voters by Congressional District in California")
+st.title("Muslim Voter Turnout by Congressional District in California")
 
 # === Load Data ===
 data = pd.read_csv("MuslimsPerCongressionalDistrictVoting.csv")
@@ -311,11 +310,11 @@ fig = go.Figure(go.Choroplethmapbox(
     text=data["hover_text"],
     hovertemplate="%{text}<extra></extra>",
     colorscale=[
-        [0.0, "white"],
-        [0.2, "yellow"],
-        [0.4, "lightgreen"],
+        [0, "white"],
+        [0.4, "yellow"],
+        [0.5, "lightgreen"],
         [0.7, "green"],
-        [1.0, "darkgreen"]
+        [1, "darkgreen"]
     ],
     marker_opacity=0.8,
     marker_line_width=1.2
@@ -340,7 +339,7 @@ st.plotly_chart(fig, use_container_width=True)
 ################## LD ##################
 
 # Title
-st.title("Eligible Muslim Voters by Legislative District in California")
+st.title("Muslim Voter Turnout by Legislative District in California")
 st.subheader("State Assembly District")
 
 
@@ -471,7 +470,7 @@ voting_max = data["Muslim_Voted_Percent"].max()
 # Keep only districts that exist in the GeoJSON
 geojson_districts = {str(f["properties"]["district"]).strip() for f in geojson_data["features"]}
 data = data[data["District_Number"].isin(geojson_districts)].copy()
-print(data['District_Number'])
+
 fig = go.Figure(go.Choroplethmapbox(
     geojson=geojson_data,
     locations=data["District_Number"],
