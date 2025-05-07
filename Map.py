@@ -40,6 +40,7 @@ population_min = merged_df["Muslim_Numbers"].min()
 population_max = merged_df["Muslim_Numbers"].max()
 # Create hover text
 # merged_df["hover_text"] = merged_df["County_Name"] + ": " + merged_df["Muslim_Numbers"].apply(lambda x: f"{x:,}") + " people"
+population_min = max(1, population_min)  # Ensures that the smallest value is at least 1
 
 # === Load GeoJSON for California counties ===
 with open("California_County_Boundaries.geojson", "r") as file:
